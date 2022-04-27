@@ -1,0 +1,419 @@
+---
+title: "Sale Plan With Highcharter"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+
+  knit: (function(input_file, encoding) {
+    out_dir <- 'docs';
+    rmarkdown::render(input_file,
+      encoding=encoding,
+      output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(flexdashboard)
+library(knitr)
+library(rpivotTable)
+library(plotly)
+library(dplyr)
+library(openintro)
+library(highcharter)
+library(ggvis)
+library(purrr)
+library(readxl)
+library(openxlsx)
+library(tidyverse)
+library(shinydashboard)
+
+#Upload data 
+
+wb_obj <- loadWorkbook("D:/R/Database/price_estimate.xlsx")
+sheet_names <- sheets(wb_obj) 
+for (i in 1:length(sheet_names)) {
+  
+  assign(sheet_names[i], readWorkbook(wb_obj, sheet = i))
+  
+}
+ 
+```
+
+Overview
+=========================================
+
+### Pricing Policy
+
+```{r echo=FALSE}
+
+Plan_A <- PA1 %>%
+    select(UnitNo, Phase, PricePerSqm_Excl_VAT_Main) %>% 
+    group_by(UnitNo, PricePerSqm_Excl_VAT_Main) %>%
+    arrange(Phase) 
+    
+
+Plan_B <- PA2 %>%
+    select(UnitNo, Phase, PricePerSqm_Excl_VAT_Main) %>% 
+    group_by(UnitNo, PricePerSqm_Excl_VAT_Main) %>%
+    arrange(Phase)
+
+    
+ hchart(Plan_A, 
+        "area", 
+        hcaes(x = UnitNo, y = PricePerSqm_Excl_VAT_Main), 
+        name = "Plan A - Price Per SQM Excl. VAT & Main.", 
+        fillOpacity = 0.1, 
+        showInLegend = TRUE, yAxis = 0) %>%
+   
+   hc_add_series(Plan_B, "area", 
+                 hcaes(x = UnitNo, y = PricePerSqm_Excl_VAT_Main), 
+                 name = "Plan B - Price Per SQM Excl. VAT & Main.", 
+                 fillOpacity = 0.5, 
+                 showInLegend = TRUE,  yAxis = 0) %>%
+   
+   hc_colors(c("orange", "gray")) %>%
+   hc_tooltip(crosshairs = TRUE, 
+             backgroundColor = "#FCFFC5",
+             shared = TRUE, 
+             borderWidth = 2) %>% 
+   hc_title(text = "Project A") %>%
+   hc_add_theme(hc_theme_elementary())
+
+```
+
+Phase Details 1-2
+=========================================
+
+Column {data-width=400}
+-----------------------------------------
+
+### Plan_Phase_1
+
+```{r echo=FALSE}
+  Plan_A_1 <- PA1 %>%
+  filter(Phase == "1") %>%
+  select(PricePerSqm_Excl_VAT_Main, 
+         BuiltUpArea, 
+         CarpetArea, 
+         Price_Excl_VAT_Main, 
+         UnitNo) 
+
+  Plan_B_1 <- PA2 %>%
+  filter(Phase == "1") %>%
+  select(PricePerSqm_Excl_VAT_Main, 
+         BuiltUpArea, 
+         CarpetArea, 
+         Price_Excl_VAT_Main, 
+         UnitNo) 
+
+
+  hchart(Plan_A_1, 
+         "spline", 
+         hcaes(x = UnitNo, 
+               y = Price_Excl_VAT_Main), 
+         name = "Plan A - Price Excl. VAT & Main.", 
+         showInLegend = TRUE, 
+         fillOpacity = 0.2,
+         yAxis = 0) %>%
+    
+  hc_add_series(Plan_B_1, 
+         "spline", 
+          hcaes(x = UnitNo, 
+                y = Price_Excl_VAT_Main), 
+          name = "Plan B - Price Excl. VAT & Main.", 
+          fillOpacity = 0.2,
+          showInLegend = TRUE,  
+          yAxis = 0) %>% 
+    
+  hc_yAxis_multiples(
+    list(title = list(text = "Price Excl. VAT & Main. - Phase 1"), 
+         top = "0%", 
+         height = "50%"),                    
+    list(title = list(text = "Price Per Sqm"), 
+         top = "50%", 
+         height = "50%", 
+         opposite = TRUE)) %>%
+    hc_add_series(Plan_A_1, 
+                "spline", 
+                hcaes(x = UnitNo, y = PricePerSqm_Excl_VAT_Main), 
+                name = "Plan A - Phase 1 - Price Per Sqm", 
+                showInLegend = TRUE,  
+                yAxis = 1) %>%
+    
+    hc_add_series(Plan_B_1, 
+                "spline", 
+                hcaes(x = UnitNo, y = PricePerSqm_Excl_VAT_Main), 
+                name = "Plan B - Phase 1 - Price Per Sqm", 
+                showInLegend = TRUE,  
+                yAxis = 1) %>%
+    
+  hc_colors(c("orange", "gray")) %>%
+    
+  hc_tooltip(crosshairs = TRUE, 
+             backgroundColor = "#FCFFC5",
+             shared = TRUE, 
+             borderWidth = 2) %>% 
+    
+  #hc_title(text = "Project A - Phase 1") %>%
+    
+  hc_add_theme(hc_theme_elementary())
+```
+
+### Plan_Phase_2 
+
+```{r echo=FALSE}
+
+    Plan_A_2 <- PA1 %>%
+  filter(Phase == "2") %>%
+  select(PricePerSqm_Excl_VAT_Main, 
+         BuiltUpArea, 
+         CarpetArea, 
+         Price_Excl_VAT_Main, 
+         UnitNo) 
+
+  Plan_B_2 <- PA2 %>%
+  filter(Phase == "2") %>%
+  select(PricePerSqm_Excl_VAT_Main, 
+         BuiltUpArea, 
+         CarpetArea, 
+         Price_Excl_VAT_Main, 
+         UnitNo) 
+
+
+  hchart(Plan_A_2, 
+         "spline", 
+         hcaes(x = UnitNo, 
+               y = Price_Excl_VAT_Main), 
+         name = "Plan A - Price Excl. VAT & Main.", 
+         showInLegend = TRUE, 
+         fillOpacity = 0.2,
+         yAxis = 0) %>%
+    
+  hc_add_series(Plan_B_2, 
+         "spline", 
+          hcaes(x = UnitNo, 
+                y = Price_Excl_VAT_Main), 
+          name = "Plan B - Price Excl. VAT & Main.", 
+          fillOpacity = 0.2,
+          showInLegend = TRUE,  
+          yAxis = 0) %>% 
+    
+  hc_yAxis_multiples(
+    list(title = list(text = "Price Excl. VAT & Main.-Phase 2"), 
+         top = "0%", 
+         height = "50%"),                    
+    list(title = list(text = "Price Per Sqm"), 
+         top = "50%", 
+         height = "50%", 
+         opposite = TRUE)) %>%
+    hc_add_series(Plan_A_2, 
+                "spline", 
+                hcaes(x = UnitNo, y = PricePerSqm_Excl_VAT_Main), 
+                name = "Plan A - Phase 2 - Price Per Sqm", 
+                showInLegend = TRUE,  
+                yAxis = 1) %>%
+    
+    hc_add_series(Plan_B_2, 
+                "spline", 
+                hcaes(x = UnitNo, y = PricePerSqm_Excl_VAT_Main), 
+                name = "Plan B - Phase 2 - Price Per Sqm", 
+                showInLegend = TRUE,  
+                yAxis = 1) %>%
+    
+  hc_colors(c("orange", "gray")) %>%
+    
+  hc_tooltip(crosshairs = TRUE, 
+             backgroundColor = "#FCFFC5",
+             shared = TRUE, 
+             borderWidth = 2) %>% 
+    
+  #hc_title(text = "Project A - Phase 2") %>%
+    
+  hc_add_theme(hc_theme_elementary())
+
+```
+
+Phase Details 2-3
+=========================================
+### Plan_Phase_2 
+
+```{r echo=FALSE}
+
+    Plan_A_2 <- PA1 %>%
+  filter(Phase == "2") %>%
+  select(PricePerSqm_Excl_VAT_Main, 
+         BuiltUpArea, 
+         CarpetArea, 
+         Price_Excl_VAT_Main, 
+         UnitNo) 
+
+  Plan_B_2 <- PA2 %>%
+  filter(Phase == "2") %>%
+  select(PricePerSqm_Excl_VAT_Main, 
+         BuiltUpArea, 
+         CarpetArea, 
+         Price_Excl_VAT_Main, 
+         UnitNo) 
+
+
+  hchart(Plan_A_2, 
+         "spline", 
+         hcaes(x = UnitNo, 
+               y = Price_Excl_VAT_Main), 
+         name = "Plan A - Price Excl. VAT & Main.", 
+         showInLegend = TRUE, 
+         fillOpacity = 0.2,
+         yAxis = 0) %>%
+    
+  hc_add_series(Plan_B_2, 
+         "spline", 
+          hcaes(x = UnitNo, 
+                y = Price_Excl_VAT_Main), 
+          name = "Plan B - Price Excl. VAT & Main.", 
+          fillOpacity = 0.2,
+          showInLegend = TRUE,  
+          yAxis = 0) %>% 
+    
+  hc_yAxis_multiples(
+    list(title = list(text = "Price Excl. VAT & Main.-Phase 2"), 
+         top = "0%", 
+         height = "50%"),                    
+    list(title = list(text = "Price Per Sqm"), 
+         top = "50%", 
+         height = "50%", 
+         opposite = TRUE)) %>%
+    hc_add_series(Plan_A_2, 
+                "spline", 
+                hcaes(x = UnitNo, y = PricePerSqm_Excl_VAT_Main), 
+                name = "Plan A - Phase 2 - Price Per Sqm", 
+                showInLegend = TRUE,  
+                yAxis = 1) %>%
+    
+    hc_add_series(Plan_B_2, 
+                "spline", 
+                hcaes(x = UnitNo, y = PricePerSqm_Excl_VAT_Main), 
+                name = "Plan B - Phase 2 - Price Per Sqm", 
+                showInLegend = TRUE,  
+                yAxis = 1) %>%
+    
+  hc_colors(c("orange", "gray")) %>%
+    
+  hc_tooltip(crosshairs = TRUE, 
+             backgroundColor = "#FCFFC5",
+             shared = TRUE, 
+             borderWidth = 2) %>% 
+    
+  #hc_title(text = "Project A - Phase 2") %>%
+    
+  hc_add_theme(hc_theme_elementary())
+
+```
+
+### Plan_Phase_3
+
+```{r echo=FALSE}
+
+    Plan_A_2 <- PA1 %>%
+  filter(Phase == "3") %>%
+  select(PricePerSqm_Excl_VAT_Main, 
+         BuiltUpArea, 
+         CarpetArea, 
+         Price_Excl_VAT_Main, 
+         UnitNo) 
+
+  Plan_B_2 <- PA2 %>%
+  filter(Phase == "3") %>%
+  select(PricePerSqm_Excl_VAT_Main, 
+         BuiltUpArea, 
+         CarpetArea, 
+         Price_Excl_VAT_Main, 
+         UnitNo) 
+
+
+  hchart(Plan_A_2, 
+         "spline", 
+         hcaes(x = UnitNo, 
+               y = Price_Excl_VAT_Main), 
+         name = "Plan A - Price Excl. VAT & Main.", 
+         showInLegend = TRUE, 
+         fillOpacity = 0.2,
+         yAxis = 0) %>%
+    
+  hc_add_series(Plan_B_2, 
+         "spline", 
+          hcaes(x = UnitNo, 
+                y = Price_Excl_VAT_Main), 
+          name = "Plan B - Price Excl. VAT & Main.", 
+          fillOpacity = 0.2,
+          showInLegend = TRUE,  
+          yAxis = 0) %>% 
+    
+  hc_yAxis_multiples(
+    list(title = list(text = "Price Excl. VAT & Main.-Phase 2"), 
+         top = "0%", 
+         height = "50%"),                    
+    list(title = list(text = "Price Per Sqm"), 
+         top = "50%", 
+         height = "50%", 
+         opposite = TRUE)) %>%
+    hc_add_series(Plan_A_2, 
+                "spline", 
+                hcaes(x = UnitNo, y = PricePerSqm_Excl_VAT_Main), 
+                name = "Plan A - Phase 2 - Price Per Sqm", 
+                showInLegend = TRUE,  
+                yAxis = 1) %>%
+    
+    hc_add_series(Plan_B_2, 
+                "spline", 
+                hcaes(x = UnitNo, y = PricePerSqm_Excl_VAT_Main), 
+                name = "Plan B - Phase 2 - Price Per Sqm", 
+                showInLegend = TRUE,  
+                yAxis = 1) %>%
+    
+  hc_colors(c("orange", "gray")) %>%
+    
+  hc_tooltip(crosshairs = TRUE, 
+             backgroundColor = "#FCFFC5",
+             shared = TRUE, 
+             borderWidth = 2) %>% 
+    
+  #hc_title(text = "Project A - Phase 3") %>%
+    
+  hc_add_theme(hc_theme_elementary())
+
+```
+
+Pivot Table _ Plan A
+=========================================
+
+### Plan A
+```{r echo=FALSE}
+rpivotTable(PA1,
+            aggregatorName = "Average",
+            cols= c("Phase","SPA","Floor"),
+            rows = "UnitType",
+            vals = "PricePerSqm_Excl_VAT_Main",
+            rendererName = "Heatmap", width="5%", height="400px")
+```
+
+Pivot Table _ Plan B 
+=========================================
+### Plan B
+
+```{r echo=FALSE}
+
+rpivotTable(PA2,
+            aggregatorName = "Average",
+            cols= c("Phase","SPA","Floor"),
+            rows = "UnitType",
+            vals = "PricePerSqm_Excl_VAT_Main",
+            rendererName = "Heatmap", width="5%", height="400px")
+```
+About Report
+========================================
+
+Created by: NamVU
+
+Confidential: HIGHLY! 
+
